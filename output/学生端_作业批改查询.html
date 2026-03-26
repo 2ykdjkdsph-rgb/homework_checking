@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>学生端｜作业批改查询</title>
+  <style>
+    :root {
+      --bg: #f4eee5;
+      --panel: rgba(255, 251, 246, 0.94);
+      --line: rgba(23, 34, 40, 0.12);
+      --ink: #1d2a2e;
+      --muted: #627276;
+      --accent: #0b6976;
+      --accent-2: #b2602b;
+      --good: #2f7d5c;
+      --mid: #d08b1f;
+      --risk: #aa4132;
+      --shadow: 0 18px 60px rgba(46, 34, 21, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Source Han Sans SC", "Noto Sans SC", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(178, 96, 43, 0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(11, 105, 118, 0.14), transparent 30%),
+        linear-gradient(180deg, #f7f2eb 0%, #efe6d8 100%);
+    }
+
+    .wrap {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+
+    .hero, .section {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.72);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 28px;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      font-size: 13px;
+      letter-spacing: 0.16em;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, h4, p { margin: 0; }
+
+    h1 {
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.08;
+    }
+
+    .hero p {
+      margin-top: 14px;
+      color: var(--muted);
+      line-height: 1.75;
+      max-width: 920px;
+      font-size: 15px;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(23, 34, 40, 0.12);
+      background: rgba(255,255,255,0.8);
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--accent), #064b55);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .query-bar {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    input[type="text"] {
+      height: 46px;
+      border-radius: 999px;
+      border: 1px solid rgba(23, 34, 40, 0.14);
+      padding: 0 18px;
+      font-size: 15px;
+      background: rgba(255,255,255,0.82);
+      color: var(--ink);
+    }
+
+    .section {
+      margin-top: 24px;
+      padding: 24px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .panel {
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.82), rgba(255,251,246,0.96));
+      padding: 20px;
+    }
+
+    .panel h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .panel ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 14px;
+    }
+
+    .student-card {
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.84), rgba(255,252,247,0.98));
+      padding: 22px;
+    }
+
+    .student-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .student-name {
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .student-topic {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .tag {
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: linear-gradient(135deg, var(--accent-2), #8f4f25);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .score-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .score-line {
+      display: grid;
+      gap: 6px;
+    }
+
+    .score-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(23, 34, 40, 0.08);
+      overflow: hidden;
+    }
+
+    .fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    }
+
+    .comment-block {
+      margin-top: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .comment-item {
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(23, 34, 40, 0.08);
+      background: rgba(255,255,255,0.72);
+    }
+
+    .comment-item h4 {
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    .comment-item p {
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    .single-matrix {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.72);
+    }
+
+    .single-matrix th,
+    .single-matrix td {
+      padding: 14px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(23, 34, 40, 0.08);
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    .single-matrix th {
+      color: var(--muted);
+      background: rgba(255,255,255,0.76);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .status-pill.completed { background: var(--good); }
+    .status-pill.partial { background: var(--mid); }
+    .status-pill.missing { background: var(--risk); }
+
+    .note {
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 13px;
+    }
+
+    .improve-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 14px;
+    }
+
+    .fallback {
+      border-radius: 24px;
+      border: 1px dashed rgba(23, 34, 40, 0.16);
+      background: rgba(255,255,255,0.72);
+      padding: 24px;
+      line-height: 1.8;
+      color: var(--muted);
+    }
+
+    .fallback strong {
+      color: var(--ink);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 920px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .query-bar {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .wrap {
+        width: min(100% - 20px, 100%);
+      }
+
+      .hero, .section {
+        padding: 18px;
+        border-radius: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <div class="eyebrow">Student Portal</div>
+          <h1>《金融创新与衍生品专题》作业批改查询</h1>
+        </div>
+        <div class="hero-actions">
+          <button class="btn primary" id="downloadBtn" disabled>下载批改结果</button>
+          <a class="btn" href="./提交作业.html">提交作业</a>
+        </div>
+      </div>
+      <p>
+        请输入学生姓名查询本次作业批改结论。查询成功后，可查看该学生的单独评语、标准执行矩阵、后续修改方向，并可直接下载对应的 markdown 评语文件。
+      </p>
+      <div class="query-bar">
+        <input id="nameInput" type="text" placeholder="请输入学生姓名，例如：王依梦">
+        <button class="btn primary" id="queryBtn">查询结果</button>
+        <button class="btn" id="resetBtn">重置</button>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 style="margin-bottom:16px;">评价标准</h2>
+      <div class="grid-2" id="criteriaColumns"></div>
+    </section>
+
+    <section class="section">
+      <h2 style="margin-bottom:16px;">学生评语卡片</h2>
+      <div id="resultArea"></div>
+    </section>
+
+    <section class="section hidden" id="matrixSection">
+      <h2 style="margin-bottom:16px;">标准执行矩阵</h2>
+      <table class="single-matrix" id="singleMatrix"></table>
+    </section>
+
+    <section class="section hidden" id="improveSection">
+      <h2 style="margin-bottom:16px;">后续提升方向</h2>
+      <ul class="improve-list" id="improveList"></ul>
+    </section>
+  </div>
+
+  <script src="./review-data.js"></script>
+  <script>
+    const data = window.reviewData;
+    const nameInput = document.getElementById("nameInput");
+    const queryBtn = document.getElementById("queryBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const resultArea = document.getElementById("resultArea");
+    const matrixSection = document.getElementById("matrixSection");
+    const improveSection = document.getElementById("improveSection");
+    const singleMatrix = document.getElementById("singleMatrix");
+    const improveList = document.getElementById("improveList");
+    const criteriaColumns = document.getElementById("criteriaColumns");
+
+    const scoreLabels = [
+      ["logic", "整体逻辑与结论"],
+      ["academic", "学术化语言表达"],
+      ["consistency", "前文分析与结论一致性"],
+      ["standard", "专业标准执行"]
+    ];
+
+    let currentStudent = null;
+
+    function renderCriteria() {
+      criteriaColumns.innerHTML = `
+        <div class="panel">
+          <h3>本次批改的四个评价方向</h3>
+          <ul>
+            ${data.evaluationDirections.map(item => `<li><strong>${item.title}</strong>：${item.description}</li>`).join("")}
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>库存分析标准主链条</h3>
+          <ul>
+            ${data.standardSteps.map(step => `<li>${step}</li>`).join("")}
+          </ul>
+        </div>
+      `;
+    }
+
+    function normalize(text) {
+      return text.replace(/\s+/g, "").trim();
+    }
+
+    function findStudent(keyword) {
+      const clean = normalize(keyword);
+      if (!clean) return null;
+      return data.students.find(student => normalize(student.name) === clean)
+        || data.students.find(student => normalize(student.name).includes(clean));
+    }
+
+    function renderStudent(student) {
+      currentStudent = student;
+      downloadBtn.disabled = false;
+
+      resultArea.innerHTML = `
+        <div class="student-card">
+          <div class="student-head">
+            <div>
+              <div class="student-name">${student.name}</div>
+              <div class="student-topic">题目：${student.topic}</div>
+            </div>
+            <div class="tag">${student.tag}</div>
+          </div>
+
+          <div class="score-grid">
+            ${scoreLabels.map(([key, label]) => `
+              <div class="score-line">
+                <div class="score-head"><span>${label}</span><span>${student.scores[key]} / 100</span></div>
+                <div class="bar"><div class="fill" style="width:${student.scores[key]}%"></div></div>
+              </div>
+            `).join("")}
+          </div>
+
+          <div class="comment-block">
+            <div class="comment-item">
+              <h4>整体评价</h4>
+              <p>${student.overallComment}</p>
+            </div>
+            <div class="comment-item">
+              <h4>学术化语言评价</h4>
+              <p>${student.academicComment}</p>
+            </div>
+            <div class="comment-item">
+              <h4>前文分析与结论一致性</h4>
+              <p>${student.consistencyComment}</p>
+            </div>
+            <div class="comment-item">
+              <h4>按照分析标准的专业评价</h4>
+              <p>${student.standardComment}</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      singleMatrix.innerHTML = `
+        <thead>
+          <tr>
+            <th>标准步骤</th>
+            <th>${student.name}</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${student.matrix.map(item => `
+            <tr>
+              <td>${item.step}</td>
+              <td>
+                <div class="status-pill ${item.status}">${data.statusMap[item.status]}</div>
+                <div class="note">${item.note}</div>
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      `;
+
+      improveList.innerHTML = student.suggestions.map(item => `<li>${item}</li>`).join("");
+      matrixSection.classList.remove("hidden");
+      improveSection.classList.remove("hidden");
+    }
+
+    function renderFallback(name) {
+      currentStudent = null;
+      downloadBtn.disabled = true;
+      resultArea.innerHTML = `
+        <div class="fallback">
+          <strong>未收到你的作业。</strong><br>
+          当前未检索到“${name || "该姓名"}”对应的批改结果，可以选择去
+          <a href="./提交作业.html">提交作业</a>。
+        </div>
+      `;
+      singleMatrix.innerHTML = "";
+      improveList.innerHTML = "";
+      matrixSection.classList.add("hidden");
+      improveSection.classList.add("hidden");
+    }
+
+    function downloadMarkdown() {
+      if (!currentStudent) return;
+      const blob = new Blob([currentStudent.markdownContent], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = currentStudent.markdownFilename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function queryStudent() {
+      const keyword = nameInput.value.trim();
+      const student = findStudent(keyword);
+      if (student) {
+        renderStudent(student);
+      } else {
+        renderFallback(keyword);
+      }
+    }
+
+    function resetView() {
+      nameInput.value = "";
+      currentStudent = null;
+      downloadBtn.disabled = true;
+      resultArea.innerHTML = `
+        <div class="fallback">
+          请输入学生姓名后查询。查询成功后，将在此处显示单一学生的批改评语、标准执行矩阵和后续提升方向。
+        </div>
+      `;
+      singleMatrix.innerHTML = "";
+      improveList.innerHTML = "";
+      matrixSection.classList.add("hidden");
+      improveSection.classList.add("hidden");
+    }
+
+    renderCriteria();
+    resetView();
+
+    const params = new URLSearchParams(window.location.search);
+    const presetName = params.get("name");
+    if (presetName) {
+      nameInput.value = presetName;
+      queryStudent();
+    }
+
+    queryBtn.addEventListener("click", queryStudent);
+    resetBtn.addEventListener("click", resetView);
+    downloadBtn.addEventListener("click", downloadMarkdown);
+    nameInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") queryStudent();
+    });
+  </script>
+</body>
+</html>
